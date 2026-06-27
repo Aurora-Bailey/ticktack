@@ -4,12 +4,14 @@ import { computeScore } from "../analytics/metrics.ts";
 import { createLogger } from "../utils/logger.ts";
 import type { OutgoingMessage } from "../types/messages.ts";
 import { publish } from "../events/bus.ts";
+import { mapInterestScore } from "../utils/interest.ts";
 
 const logger = createLogger("persistence.updater");
 
 export async function persistQuote(tier: Tier, quote: Quote) {
   const breakdown = computeScore(quote);
   const now = new Date();
+  const suggestedTier = mapInterestScore(breakdown.interest);
 
   await collections.stocks.updateOne(
     { symbol: quote.symbol },
@@ -21,6 +23,9 @@ export async function persistQuote(tier: Tier, quote: Quote) {
         updatedAt: now,
         price: quote.price,
         changePct: quote.changePct,
+        interestScore: breakdown.interest,
+        interestBucket: suggestedTier,
+        lastInterestUpdate: now,
       },
       $setOnInsert: { createdAt: now },
     },
@@ -34,6 +39,7 @@ export async function persistQuote(tier: Tier, quote: Quote) {
     price: quote.price,
     changePct: quote.changePct,
     volume: quote.volume,
+    interest: breakdown.interest,
     scrapedAt: quote.timestamp,
   });
 
@@ -41,6 +47,8 @@ export async function persistQuote(tier: Tier, quote: Quote) {
     tier,
     symbol: quote.symbol,
     score: Number(breakdown.score.toFixed(2)),
+    interest: breakdown.interest,
+    suggestedTier,
   });
 
   return breakdown;
@@ -57,6 +65,7 @@ export async function updateRanking(tier: Tier): Promise<RankingRow[]> {
         score: { $first: "$score" },
         price: { $first: "$price" },
         changePct: { $first: "$changePct" },
+        interest: { $first: "$interest" },
       },
     },
     { $sort: { score: -1 } },

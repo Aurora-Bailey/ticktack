@@ -16,6 +16,8 @@ export const collections = {
   rankings: db.collection<RankingDocument>("rankings"),
   snapshots: db.collection<SnapshotDocument>("snapshots"),
   events: db.collection<EventDocument>("events"),
+  robinhood: db.collection<RobinhoodInstrumentDocument>("robinhood"),
+  fundamentals: db.collection<FundamentalsDocument>("fundamentals"),
 };
 
 export type Tier = "weekly" | "daily" | "hourly" | "minute";
@@ -28,6 +30,11 @@ export interface StockDocument {
   tier: Tier;
   fundamentals?: Record<string, unknown>;
   lastSynced?: Date;
+  interestScore?: number;
+  interestBucket?: Tier;
+  lastInterestUpdate?: Date;
+  tierLastShift?: Date;
+  scrapeEligible?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +47,7 @@ export interface SnapshotDocument {
   price: number;
   changePct: number;
   volume: number;
+  interest: number;
   scrapedAt: Date;
 }
 
@@ -48,6 +56,7 @@ export interface RankingRow {
   score: number;
   price: number;
   changePct: number;
+  interest: number;
   sector?: string;
 }
 
@@ -67,4 +76,21 @@ export interface EventDocument {
   createdAt: Date;
   meta?: Record<string, unknown>;
 }
-"";
+
+export interface RobinhoodInstrumentDocument {
+  _id?: { $oid: string };
+  symbol?: string;
+  url: string;
+  data: Record<string, unknown>;
+  fun_pull?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FundamentalsDocument {
+  _id?: { $oid: string };
+  symbol: string;
+  sourceUrl: string;
+  fetchedAt: Date;
+  payload: Record<string, unknown>;
+}

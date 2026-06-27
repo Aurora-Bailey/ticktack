@@ -1,7 +1,7 @@
 import { config } from "../config/mod.ts";
 
 type Level = "DEBUG" | "INFO" | "WARNING" | "ERROR" | "CRITICAL";
-type ActionType = "NET" | "HTTP" | "WS" | "SCRAPE" | "DB";
+type ActionType = "NET" | "HTTP" | "WS" | "SCRAPE" | "DB" | "BAL";
 
 const LEVEL_WEIGHT: Record<Level, number> = {
   DEBUG: 10,
@@ -28,6 +28,7 @@ const ACTION_COLOR: Record<ActionType, (text: string) => string> = {
   WS: (text) => magenta(text),
   SCRAPE: (text) => cyan(text),
   DB: (text) => yellow(text),
+  BAL: (text) => green(text),
 };
 
 await Deno.mkdir("logs", { recursive: true });

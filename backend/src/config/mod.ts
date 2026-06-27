@@ -22,6 +22,10 @@ const ConfigSchema = z.object({
   API_KEY_YAHOO: z.string().optional(),
   API_KEY_POLYGON: z.string().optional(),
   ENABLE_CHANGE_STREAMS: z.coerce.boolean().default(false),
+  INTEREST_MINUTE_THRESHOLD: z.coerce.number().min(1).max(100).default(75),
+  INTEREST_HOURLY_THRESHOLD: z.coerce.number().min(1).max(100).default(55),
+  INTEREST_DAILY_THRESHOLD: z.coerce.number().min(1).max(100).default(35),
+  INTEREST_COOLDOWN_MS: z.coerce.number().int().min(1000).default(1000 * 60 * 10),
 });
 
 const DEFAULT_REFRESH_INTERVALS = {

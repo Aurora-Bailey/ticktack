@@ -24,6 +24,7 @@
 ```
 
 - Scheduler seeds jobs per tier (minute/hourly/daily/weekly), distributing symbols through a concurrency-limited job queue.
+- An interest rebalancer recalculates a 1–100 activity score (based on price/volume velocity) and automatically promotes or demotes tickers between tiers after a configurable cool-down while enforcing caps (20 minute / 100 hourly / 1000 daily / 10k weekly) so scrape volume stays bounded.
 - Scraper workers fetch quotes (Yahoo adapter today, pluggable for additional vendors), normalize payloads, and persist results.
 - Persistence layer computes analytics, stores snapshots, emits ranking documents, and pushes events to the broadcast channel.
 - WebSocket server fans out broadcast messages to connected clients; HTTP server exposes bootstrap and history endpoints.
@@ -49,6 +50,7 @@
 - **snapshots**: rolling historical documents keyed by `symbol` + `window`; TTL index trims old minute-level data.
 - **rankings**: top N ranking per window for fast bootstrap.
 - **events**: operational and alert messages for audit/replay.
+- **robinhood**: raw instrument catalog synchronized from Robinhood’s `/instruments/` endpoint (one request per second, no truncation) for reference and enrichment.
 
 ## Operational Flow
 

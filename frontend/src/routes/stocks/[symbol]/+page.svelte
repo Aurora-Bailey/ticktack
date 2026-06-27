@@ -41,9 +41,23 @@
         <section class="space-y-4 px-6 py-5">
           <div class="rounded-2xl bg-slate-100 p-5">
             <div class="text-3xl font-semibold text-slate-900">${latest?.price?.toFixed?.(2) ?? '—'}</div>
-            <div class={`text-sm ${latest?.changePct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                {latest?.changePct?.toFixed?.(2) ?? '0.00'}%
-              </div>
+            <div class={`text-sm ${latest?.changePct >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{latest?.changePct?.toFixed?.(2) ?? '0.00'}%</div>
+            <div class="mt-3 flex items-center gap-2 text-sm">
+              <span class="text-slate-500">Interest</span>
+              <span
+                class={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+                  latest?.interest >= 75
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : latest?.interest >= 50
+                      ? 'bg-amber-100 text-amber-700'
+                      : latest?.interest >= 25
+                        ? 'bg-sky-100 text-sky-700'
+                        : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {latest?.interest?.toFixed?.(0) ?? '—'}
+              </span>
+            </div>
           </div>
           <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-inner">
             <Sparkline values={priceSeries} />

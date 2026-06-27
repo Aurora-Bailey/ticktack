@@ -7,6 +7,7 @@ export interface RankingRow {
   score: number;
   price: number;
   changePct: number;
+  interest: number;
   sector?: string;
 }
 
@@ -69,5 +70,7 @@ export const topCombined = derived(rankings, ($rankings) => {
     ...$rankings.minute,
     ...$rankings.hourly.filter((row) => !$rankings.minute.find((m) => m.symbol === row.symbol)),
     ...$rankings.daily.filter((row) => !$rankings.minute.find((m) => m.symbol === row.symbol)),
-  ].slice(0, 50);
+  ]
+    .sort((a, b) => b.interest - a.interest)
+    .slice(0, 50);
 });

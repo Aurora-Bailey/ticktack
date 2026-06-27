@@ -3,7 +3,8 @@
   "tasks": {
     "dev": "deno run --reload -A src/main.ts",
     "test": "deno test --allow-env --allow-read --allow-net",
-    "seed": "deno run -A src/scripts/seed.ts"
+    "seed:robinhood": "deno run -A src/seed.ts",
+    "fundamentals": "deno run -A src/fundamentals.ts"
   },
   "fmt": {
     "lineWidth": 100,

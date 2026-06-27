@@ -1,8 +1,11 @@
 import type { Quote } from "../scraper/types.ts";
 
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
 export interface ScoreBreakdown {
   symbol: string;
   score: number;
+  interest: number;
   components: {
     momentum: number;
     trend: number;
@@ -19,9 +22,14 @@ export function computeScore(quote: Quote): ScoreBreakdown {
 
   const score = momentum * 0.5 + trend * 0.35 + volumeScore * 0.15;
 
+  const changeComponent = clamp(Math.abs(momentum) * 8, 0, 80);
+  const volumeComponent = clamp((volumeRatio - 1) * 25, 0, 20);
+  const interest = clamp(changeComponent + volumeComponent, 1, 100);
+
   return {
     symbol: quote.symbol,
     score,
+    interest,
     components: {
       momentum,
       trend,

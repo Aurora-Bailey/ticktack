@@ -6,8 +6,28 @@ import { publishEvent } from "../../events/publisher.ts";
 
 const logger = createLogger("scraper.worker");
 
+const THROTTLE_MS = 1000;
+let throttleChain: Promise<void> = Promise.resolve();
+let lastFetchAt = 0;
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function enforceThrottle() {
+  throttleChain = throttleChain.then(async () => {
+    const now = Date.now();
+    const wait = Math.max(0, THROTTLE_MS - (now - lastFetchAt));
+    if (wait > 0) {
+      logger.action("NET", "Throttle pause", { waitMs: wait });
+      await sleep(wait);
+    }
+    lastFetchAt = Date.now();
+  });
+  await throttleChain;
+}
+
 export async function handleJob(job: Job) {
   logger.action("SCRAPE", "Executing job", { symbol: job.symbol, tier: job.tier });
+  await enforceThrottle();
   const quote = await fetchQuote(job.symbol);
   if (!quote) {
     await publishEvent("scrape.error", {

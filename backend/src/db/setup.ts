@@ -35,5 +35,20 @@ export async function ensureIndexes(): Promise<void> {
     ],
   });
 
+  await collections.robinhood.createIndexes({
+    indexes: [
+      { key: { url: 1 }, name: "robinhood_url_unique", unique: true },
+      { key: { symbol: 1 }, name: "robinhood_symbol" },
+      { key: { fun_pull: 1 }, name: "robinhood_fun_pull" },
+    ],
+  });
+
+  await collections.fundamentals.createIndexes({
+    indexes: [
+      { key: { symbol: 1 }, name: "fundamentals_symbol" },
+      { key: { fetchedAt: -1 }, name: "fundamentals_recent" },
+    ],
+  });
+
   logger.info("Ensured MongoDB indexes");
 }

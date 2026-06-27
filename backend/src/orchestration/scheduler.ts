@@ -5,16 +5,33 @@ import { JobQueue } from "./job_queue.ts";
 import { getSymbolsByTier } from "./symbol_loader.ts";
 import { handleJob } from "../scraper/services/worker.ts";
 import { publishEvent } from "../events/publisher.ts";
+import { startRebalancer } from "./rebalancer.ts";
 
 const logger = createLogger("scheduler");
 
 const queue = new JobQueue(config.API_REQUEST_CONCURRENCY, handleJob);
 
 const tierConfig: Record<Tier, { interval: number; batchSize: number; defaultLimit: number }> = {
-  weekly: { interval: config.REFRESH_INTERVALS.weekly, batchSize: config.SCRAPE_BATCH_SIZE, defaultLimit: 10000 },
-  daily: { interval: config.REFRESH_INTERVALS.daily, batchSize: Math.min(1000, config.SCRAPE_BATCH_SIZE), defaultLimit: 1000 },
-  hourly: { interval: config.REFRESH_INTERVALS.hourly, batchSize: Math.min(300, config.SCRAPE_BATCH_SIZE), defaultLimit: 300 },
-  minute: { interval: config.REFRESH_INTERVALS.minute, batchSize: Math.min(50, config.SCRAPE_BATCH_SIZE), defaultLimit: 50 },
+  weekly: {
+    interval: config.REFRESH_INTERVALS.weekly,
+    batchSize: Math.min(10000, config.SCRAPE_BATCH_SIZE),
+    defaultLimit: 10000,
+  },
+  daily: {
+    interval: config.REFRESH_INTERVALS.daily,
+    batchSize: Math.min(1000, config.SCRAPE_BATCH_SIZE),
+    defaultLimit: 1000,
+  },
+  hourly: {
+    interval: config.REFRESH_INTERVALS.hourly,
+    batchSize: Math.min(100, config.SCRAPE_BATCH_SIZE),
+    defaultLimit: 100,
+  },
+  minute: {
+    interval: config.REFRESH_INTERVALS.minute,
+    batchSize: Math.min(20, config.SCRAPE_BATCH_SIZE),
+    defaultLimit: 20,
+  },
 };
 
 function jitter(ms: number): number {
@@ -51,6 +68,8 @@ export function startScheduler(signal: AbortSignal) {
   signal.addEventListener("abort", () => {
     for (const id of controllers) clearInterval(id as unknown as number);
   });
+
+  startRebalancer(signal);
 
   logger.info("Scheduler started");
 }

@@ -53,6 +53,7 @@
               <tr>
                 <th class="px-4 py-3 text-left font-semibold tracking-wide">Symbol</th>
                 <th class="px-4 py-3 text-right font-semibold tracking-wide">Score</th>
+                <th class="px-4 py-3 text-right font-semibold tracking-wide">Interest</th>
                 <th class="px-4 py-3 text-right font-semibold tracking-wide">Price</th>
                 <th class="px-4 py-3 text-right font-semibold tracking-wide">Change %</th>
               </tr>
@@ -65,6 +66,21 @@
                       <a class="text-blue-600 hover:underline" href={`/stocks/${row.symbol}`}>{row.symbol}</a>
                     </td>
                     <td class="px-4 py-3 text-right font-mono text-slate-700">{row.score.toFixed(2)}</td>
+                    <td class="px-4 py-3 text-right">
+                      <span
+                        class={`inline-flex min-w-[3.5rem] justify-center rounded-full px-2 py-1 text-xs font-semibold ${
+                          row.interest >= 75
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : row.interest >= 50
+                              ? 'bg-amber-100 text-amber-700'
+                              : row.interest >= 25
+                                ? 'bg-sky-100 text-sky-700'
+                                : 'bg-slate-100 text-slate-600'
+                        }`}
+                      >
+                        {row.interest.toFixed(0)}
+                      </span>
+                    </td>
                     <td class="px-4 py-3 text-right font-mono text-slate-700">${row.price.toFixed(2)}</td>
                     <td
                       class={`px-4 py-3 text-right font-mono ${
@@ -95,8 +111,23 @@
           <ul class="flex max-h-72 flex-col gap-2 overflow-auto px-5 py-4">
             {#each $topCombined as item (item.symbol)}
               <li class="flex items-center justify-between rounded-lg bg-slate-100 px-4 py-2 text-sm">
-                <span class="font-semibold text-slate-800">{item.symbol}</span>
-                <span class="font-mono text-slate-600">{item.score.toFixed(1)}</span>
+                <div class="flex flex-col">
+                  <span class="font-semibold text-slate-800">{item.symbol}</span>
+                  <span class="text-xs text-slate-500">Score {item.score.toFixed(1)}</span>
+                </div>
+                <span
+                  class={`inline-flex min-w-[3rem] justify-center rounded-full px-2 py-1 text-xs font-semibold ${
+                    item.interest >= 75
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : item.interest >= 50
+                        ? 'bg-amber-100 text-amber-700'
+                        : item.interest >= 25
+                          ? 'bg-sky-100 text-sky-700'
+                          : 'bg-slate-200 text-slate-600'
+                  }`}
+                >
+                  {item.interest.toFixed(0)}
+                </span>
               </li>
             {/each}
           </ul>

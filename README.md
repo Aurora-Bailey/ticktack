@@ -18,6 +18,7 @@ docs/       # Architecture notes and diagrams (coming soon)
 - Event bus uses `BroadcastChannel` so rankings + system events reach WebSocket clients and observers.
 - HTTP server supplies bootstrap REST endpoints: `GET /rankings/current`, `GET /stocks/:symbol`, `GET /health`.
 - WebSocket server streams live ranking updates and events to connected frontends.
+- Interest-aware rebalancer promotes or demotes tickers across tiers based on an auto-computed 1–100 activity score, keeping the hot movers on the minute cadence while enforcing tier caps (20 minute, 100 hourly, 1000 daily, 10k weekly) so the queue scales cleanly to ~10k symbols.
 
 ### Running the Backend
 
@@ -25,9 +26,11 @@ Requirements: Deno 1.40+, MongoDB (prefer replica set for change streams, but no
 
 ```bash
 cd backend
-deno task seed   # optional: seed sample symbols after Mongo is running
+deno task seed:robinhood  # crawl Robinhood catalog into the raw instrumentation collection
 deno task dev    # starts HTTP on :8080 and WS on :8081
 ```
+
+The seeding utility hydrates roughly 10,000 tickers by paging through Robinhood’s public `/instruments/` API at one request per second, filtering for active US-tradable symbols, and streaming green `[SEED]` logs (with the running total) as each new entry lands in Mongo. The `robinhood` collection also stores lossless instrument payloads for reference.
 
 Environment variables (see `backend/src/config/mod.ts`):
 
@@ -39,6 +42,10 @@ Environment variables (see `backend/src/config/mod.ts`):
 | `MONGO_DB` | `stockpulse` | Database name |
 | `SCRAPE_BATCH_SIZE` | 100 | Max symbols processed per cadence |
 | `API_REQUESTS_PER_MINUTE` | 600 | Rate-limiter budget |
+| `INTEREST_MINUTE_THRESHOLD` | 75 | Score needed to watch a symbol every minute |
+| `INTEREST_HOURLY_THRESHOLD` | 55 | Score needed for the hourly cadence |
+| `INTEREST_DAILY_THRESHOLD` | 35 | Score needed for the daily cadence |
+| `INTEREST_COOLDOWN_MS` | 600000 | Minimum time between automatic tier shifts |
 
 Put overrides in `.env` within `backend/`.
 
